@@ -1,0 +1,29 @@
+version: '3'
+
+services:
+  telegramdocker :
+    image: telegramdocker
+    depends_on:
+      - "postgres_image"
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:80" 
+    environment:
+      DB_CONNECTION_STRING: "Host=postgres_image;Port=5432;Database=MigrationTelegramBot;Username=postgres;Password=CyberDude"
+    networks:
+      - telegramdocker 
+
+  postgres_image:
+    image: postgres:latest
+    container_name: "postgres"
+    restart: always
+    environment:
+     - POSTGRES_USER=postgres
+     - POSTGRES_PASSWORD=CyberDude
+     - POSTGRES_DB=MigrationTelegramBot
+     expose:
+      - "5432"
+volumes:
+  db_volume:
