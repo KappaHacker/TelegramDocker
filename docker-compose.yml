@@ -1,4 +1,3 @@
-Содержимое docker-compose.yml:
 version: '3.4'
 
 networks:
@@ -7,6 +6,7 @@ networks:
 
 services:
   telegramdocker :
+    tty: true
     image: telegramdocker
     depends_on:
       - "postgres_image"
@@ -27,5 +27,7 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: CyberDude
       POSTGRES_DB: MigrationTelegramBot
+    networks:
+      - telegramdocker
 volumes:
   db_volume:
