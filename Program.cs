@@ -1,4 +1,4 @@
-﻿using ProgramSettings;
+using ProgramSettings;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -23,7 +23,7 @@ namespace TelegramDocker
 
         static TelegramUser user = new TelegramUser();                  //буффераня переменная, в которой будех храниться информация о чате
         static List<TelegramUser> TUsers = new List<TelegramUser>();     //лист, в котором хранится информация о чате
-
+        static ApplicationContext db = new ApplicationContext();
         public static async Task Main()
         {
             
@@ -32,10 +32,9 @@ namespace TelegramDocker
             var me = await Bot.GetMeAsync();
             var cts = new CancellationTokenSource();
 
-            using (ApplicationContext db = new ApplicationContext())
-            {
-                TUsers = db.Users.ToList();
-            }
+
+           TUsers = db.Users.ToList();
+
 
             Bot.StartReceiving(new DefaultUpdateHandler(HandleUpdateAsync, HandleErrorAsync), cts.Token);       //подключаем обработчик на обновления и ошибки
 
@@ -122,8 +121,7 @@ namespace TelegramDocker
         //сохранений изменений состояния чата
         static async Task SaveUsers()
         {
-            using (ApplicationContext db = new ApplicationContext())
-            {
+
                 var entity = db.Users.FirstOrDefault(item => item.Id == tmpChatId);
                 if (entity != null)
                 {
@@ -133,14 +131,13 @@ namespace TelegramDocker
 
                     db.SaveChanges();
                 }
-            }
+            
         }
 
         // Проверка при первом запуске бота в чате
         static async Task CheckUser()
         {
-            using (ApplicationContext db = new ApplicationContext())
-            {
+
                 if (TUsers.Find(n => n.Id == tmpChatId) == null)
                 {
                 // создаем два объекта User
@@ -150,7 +147,7 @@ namespace TelegramDocker
                     db.SaveChanges();
                     TUsers = db.Users.ToList();
                 }
-            }
+            
         }
 
         //обработка состояния чата после записи значения миграции
