@@ -19,10 +19,11 @@ namespace TelegramDocker
 
         private static TelegramBotClient Bot;
 
-        static long tmpChatId=0;                          //класс для работы с json файлом
+        static long tmpChatId=0;                                        //переменная для хранения id чата от которого поступил update                          
 
-        static TelegramUser user = new TelegramUser();                  //буффераня переменная, в которой будех храниться информация о чате
-        static List<TelegramUser> TUsers = new List<TelegramUser>();     //лист, в котором хранится информация о чате
+        static TelegramUser user = new TelegramUser();                  //класс, в котором будех храниться информация о чате
+        static List<TelegramUser> TUsers = new List<TelegramUser>();     //лист, в котором хранятся экземпляры класса user
+        
         static ApplicationContext db = new ApplicationContext();
         public static async Task Main()
         {
