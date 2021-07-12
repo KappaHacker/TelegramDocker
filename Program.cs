@@ -11,6 +11,8 @@ using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
 using TelegramBotUser;
+using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 
 namespace TelegramDocker
 {
@@ -25,16 +27,30 @@ namespace TelegramDocker
         static List<TelegramUser> TUsers = new List<TelegramUser>();     //лист, в котором хранятся экземпляры класса user
         
         static ApplicationContext db = new ApplicationContext();
+        static ILogger logger;
         public static async Task Main()
         {
             
-
+            var loggerFactory = LoggerFactory.Create(builder =>
+            {
+                builder.AddConsole();
+            });
+            logger = loggerFactory.CreateLogger<Program>();
             Bot = new TelegramBotClient(Configuration.BotToken);
             var me = await Bot.GetMeAsync();
             var cts = new CancellationTokenSource();
 
 
-           TUsers = db.Users.ToList();
+           try
+            {
+                db = new ApplicationContext();
+                TUsers = db.Users.ToList();
+            }
+            catch (Exception ex)
+            {
+                ErrorMessage(ex);
+                TUsers = JsonConvert.DeserializeObject<List<TelegramUser>>(System.IO.File.ReadAllText(Configuration.path));
+            }
 
 
             Bot.StartReceiving(new DefaultUpdateHandler(HandleUpdateAsync, HandleErrorAsync), cts.Token);       //подключаем обработчик на обновления и ошибки
@@ -120,35 +136,51 @@ namespace TelegramDocker
         }
 
         //сохранений изменений состояния чата
-        static async Task SaveUsers()
+                static async Task SaveUsersDB()
         {
-
+            try
+            {
                 var entity = db.Users.FirstOrDefault(item => item.Id == tmpChatId);
                 if (entity != null)
                 {
                     entity.migration = user.migration;
-                    entity.setValueCheck= user.setValueCheck;
+                    entity.setValueCheck = user.setValueCheck;
                     entity.setterValueId = user.setterValueId;
-
+                    //throw new Exception("Тестовая ошибка");
                     db.SaveChanges();
                 }
-            
+            }
+            catch (Exception ex)
+            {
+                //logger.LogInformation("Error message: {0}", ex.Message);
+                ErrorMessage(ex);
+                await SaveUsersJSON();
+            }
         }
-
         // Проверка при первом запуске бота в чате
         static async Task CheckUser()
         {
 
-                if (TUsers.Find(n => n.Id == tmpChatId) == null)
-                {
+            if (TUsers.Find(n => n.Id == tmpChatId) == null)
+            {
                 // создаем два объекта User
-                    TelegramUser user1 = new TelegramUser { migration = 0, Id = tmpChatId, setValueCheck=false, setterValueId = 0 };
+                TelegramUser user1 = new TelegramUser { migration = 0, Id = tmpChatId, setValueCheck = false, setterValueId = 0 };
+                try
+                {
+                   
                     // добавляем их в бд
                     db.Users.AddRange(user1);
                     db.SaveChanges();
-                    TUsers = db.Users.ToList();
                 }
-            
+                catch (System.Exception ex)
+                {
+                    ErrorMessage(ex);
+                    TUsers.Add(user1);
+                    await SaveUsersJSON();
+                }
+                TUsers.Add(user1);
+            }
+
         }
 
         //обработка состояния чата после записи значения миграции
@@ -222,6 +254,12 @@ namespace TelegramDocker
         {
             Console.WriteLine($"Unknown update type: {update.Type}");
             return Task.CompletedTask;
+        }
+        public static void ErrorMessage(Exception ex)
+        {
+            logger.LogError("LogError {0}", ex.Message);
+            logger.LogInformation("StackTrace {0}", ex.StackTrace);
+            logger.LogInformation("TargetSite {0}", ex.TargetSite);
         }
     }
 }
