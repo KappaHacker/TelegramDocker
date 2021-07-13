@@ -1,0 +1,33 @@
+version: '3.4'
+
+networks:
+  telegramdocker :
+    driver: bridge
+
+services:
+  telegramdocker :
+    tty: true
+    image: telegramdocker
+    depends_on:
+      - "postgres_image"
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      DB_CONNECTION_STRING: "Host=postgres_image;Port=5432;Database=MigrationTelegramBot;Username=postgres;Password=CyberDude"
+    networks:
+      - telegramdocker 
+
+  postgres_image:
+    image: postgres:latest
+    ports:
+      - "5432"
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: CyberDude
+      POSTGRES_DB: MigrationTelegramBot
+    networks:
+      - telegramdocker
+volumes:
+  db_volume:
