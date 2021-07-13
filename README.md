@@ -7,6 +7,22 @@ TelegramBotWithPostgreSqlOnDocker - бот, который выполняет ф
 
 ## Test bot locally
 
+### Telegram Bot
+
+Вы должны добавить пакеты nuget в свой проект:
+
+- Добавьте [Telegram.Bot](https://www.nuget.org/packages/Telegram.Bot/) с помощью диспетчера пакетов в IDE или из командной строки: 
+
+  ```shell
+  dotnet add package Telegram.Bot --version 16.0.0
+  ```
+
+- Добавьте [Telegram.Bot.Extensions.Polling](https://www.nuget.org/packages/Telegram.Bot.Extensions.Polling/) с помощью диспетчера пакетов в своей среде IDE или из командной строки: 
+- 
+  ```shell
+  dotnet add package Telegram.Bot.Extensions.Polling --version 0.2.0
+  ```
+  
 ### BotFather
 Нужно создать бота через BotFather и получить токен. Все настройки отображения бота и команд происходят через него.
 
