@@ -7,6 +7,9 @@ TelegramBotWithPostgreSqlOnDocker - бот, который выполняет ф
 
 ## Test bot locally
 
+### BotFather
+Нужно создать бота через BotFather и получить токен. Все настройки отображения бота и команд происходят через него.
+
 ### PostgreSql
 Необходимо установить PostgreSql и настроить его. Скачать нужную [версию - download](https://www.postgresql.org/download).
 Также установите необходимые Nuget пакеты EF core  для взаимодействия c базой.
