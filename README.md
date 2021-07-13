@@ -25,10 +25,6 @@ public static class Configuration
     }
 ```
 
-Необходимо установить PostgreSql и настроить его. Скачать нужную версию с 
-https://www.postgresql.org/download/
-
-
 ### Docker
 Чтобы упаковать проект в docker необходимо будет внести изменения в пути до ваших файлов.
 
