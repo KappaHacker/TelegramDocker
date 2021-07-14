@@ -39,7 +39,7 @@ namespace TelegramDocker
                 try
                 {
                     db = new ApplicationContext();
-                    db.telegramChatInfo.UpdateRange(TUsers);
+                    db.TelegramChatInfo.UpdateRange(TUsers);
                     db.SaveChanges();
                     dbIsWorking = true;
                 }
@@ -56,12 +56,12 @@ namespace TelegramDocker
         //функция обновления записи с id чата = tmpChatId в бд
         static async Task SaveUserDB(long tmpChatId, TelegramUser user, ILogger logger)
         {
-            var entity = db.telegramChatInfo.FirstOrDefault(item => item.Id == tmpChatId);
+            var entity = db.TelegramChatInfo.FirstOrDefault(item => item.Id == tmpChatId);
             if (entity != null)
             {
-                entity.migration = user.migration;
-                entity.setValueCheck = user.setValueCheck;
-                entity.setterValueId = user.setterValueId;
+                entity.Migration = user.Migration;
+                entity.SetValueCheck = user.SetValueCheck;
+                entity.SetterValueId = user.SetterValueId;
                 db.SaveChanges();
                 await SaveUsersJSON();
             }
@@ -82,7 +82,7 @@ namespace TelegramDocker
         {
             if (TUsers.Find(n => n.Id == tmpChatId) == null)
             {
-                TelegramUser user1 = new TelegramUser { migration = 0, Id = tmpChatId, setValueCheck = false, setterValueId = 0, messageId = 0 };
+                TelegramUser user1 = new TelegramUser { Migration = 0, Id = tmpChatId, SetValueCheck = false, SetterValueId = 0, MessageId = 0 };
                 TUsers.Add(user1);
                 await SaveChanges(tmpChatId, user1, logger, cancellationToken);                
             }
@@ -94,7 +94,7 @@ namespace TelegramDocker
             try
             {
                 db = new ApplicationContext();
-                TUsers = db.telegramChatInfo.ToList();
+                TUsers = db.TelegramChatInfo.ToList();
             }
             catch (Exception ex)
             {

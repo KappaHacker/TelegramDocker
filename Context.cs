@@ -2,12 +2,13 @@
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using TelegramBotUser;
 using ProgramSettings;
+using Microsoft.Extensions.Logging;
 
 namespace TelegramDocker
 {
     public class ApplicationContext : DbContext
     {
-        public DbSet<TelegramUser> telegramChatInfo { get; set; }
+        public DbSet<TelegramUser> TelegramChatInfo { get; set; }
 
         public ApplicationContext()
         {
@@ -18,8 +19,8 @@ namespace TelegramDocker
             }
             catch(System.Exception ex)
             {
-                System.Console.WriteLine("Хранение данных будет происходить в JSON файл");
                 UserDataManager.ErrorMessage(ex, Program.logger);
+                Program.logger.LogInformation("Хранение данных будет происходить в JSON файл");
             }
         }
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)

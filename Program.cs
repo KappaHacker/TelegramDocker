@@ -100,7 +100,7 @@ namespace TelegramDocker
                 sentMessage = await action;
 
             }// или это сообщение для ввода после метод setvalue
-            else if (message.Type == MessageType.Text && user.setValueCheck && user.setterValueId == message.From.Id && user.Id == message.Chat.Id)
+            else if (message.Type == MessageType.Text && user.SetValueCheck && user.SetterValueId == message.From.Id && user.Id == message.Chat.Id)
             {
                 if (message.Text.StartsWith('№'))
                 {
@@ -117,7 +117,7 @@ namespace TelegramDocker
                 else
                 {
                     await Bot.SendTextMessageAsync(message.Chat.Id, "Не удалось записать значение", replyMarkup: new ReplyKeyboardRemove());
-                    UserDataManager.TUsers.Find(n => n.Id == tmpChatId).setValueCheck = false;
+                    UserDataManager.TUsers.Find(n => n.Id == tmpChatId).SetValueCheck = false;
                 }
 
             }
@@ -129,22 +129,22 @@ namespace TelegramDocker
         {
             if (long.TryParse(message.Text.TrimStart('№'), out long temp))
             {
-                user.migration = temp;
-                user.setValueCheck = false;
+                user.Migration = temp;
+                user.SetValueCheck = false;
 
-                var botMessage = await Bot.SendTextMessageAsync(chatId: message.Chat.Id, text: $"Последняя миграция - {user.migration}",
+                var botMessage = await Bot.SendTextMessageAsync(chatId: message.Chat.Id, text: $"Последняя миграция - {user.Migration}",
                                              replyMarkup: new ReplyKeyboardRemove());
                 //закрепление сообщения с измененным значение миграции
-                if (user.messageId != 0)
-                    await Bot.UnpinChatMessageAsync(chatId: message.Chat.Id, user.messageId);
+                if (user.MessageId != 0)
+                    await Bot.UnpinChatMessageAsync(chatId: message.Chat.Id, user.MessageId);
                 await Bot.PinChatMessageAsync(chatId: message.Chat.Id, botMessage.MessageId);
 
-                user.messageId = botMessage.MessageId;
+                user.MessageId = botMessage.MessageId;
                 await UserDataManager.SaveChanges(tmpChatId, user, logger, cancellationToken);
             }
             else
             {
-                user.setValueCheck = false;
+                user.SetValueCheck = false;
                 await Bot.SendTextMessageAsync(message.Chat.Id, "Не удалось записать значение", replyMarkup: new ReplyKeyboardRemove());
             }
         }
@@ -152,9 +152,9 @@ namespace TelegramDocker
         //установка состояния чата на запись значения миграции
         public static async Task<Message> GetValue(Message message)
         {
-            user.setValueCheck = true;
-            user.setterValueId = message.From.Id;
-            Console.WriteLine($"setvaluecheck - {user.setValueCheck}");
+            user.SetValueCheck = true;
+            user.SetterValueId = message.From.Id;
+            Console.WriteLine($"setvaluecheck - {user.SetValueCheck}");
 
             return await Bot.SendTextMessageAsync(message.Chat.Id, "Введите значение миграции (№.....)", replyMarkup: new ReplyKeyboardRemove());
         }
@@ -162,21 +162,21 @@ namespace TelegramDocker
         //получение следующего знечения миграции
         static async Task<Message> NextMigration(Message message, CancellationToken cancellationToken)
         {
-            user.migration++;
-            UserDataManager.TUsers.Find(n => n.Id == tmpChatId).migration=user.migration;     
+            user.Migration++;
+            UserDataManager.TUsers.Find(n => n.Id == tmpChatId).Migration=user.Migration;     
             
             await Bot.SendTextMessageAsync(chatId: message.Chat.Id,
                                                                   text: $"Значение миграции изменено",
                                                                   replyMarkup: new ReplyKeyboardRemove());
 
             var botMessage = await Bot.SendTextMessageAsync(chatId: message.Chat.Id,
-                                                       text: $"Последняя миграция - {user.migration}",
+                                                       text: $"Последняя миграция - {user.Migration}",
                                                        replyMarkup: new ReplyKeyboardRemove());
             //закрепление сообщения с измененным значение миграции
-            if(user.messageId != 0)
-                await Bot.UnpinChatMessageAsync(chatId: message.Chat.Id, user.messageId);
+            if(user.MessageId != 0)
+                await Bot.UnpinChatMessageAsync(chatId: message.Chat.Id, user.MessageId);
             await Bot.PinChatMessageAsync(chatId: message.Chat.Id, botMessage.MessageId);
-            user.messageId = botMessage.MessageId;
+            user.MessageId = botMessage.MessageId;
 
             await UserDataManager.SaveChanges(tmpChatId, user, logger, cancellationToken);
 
@@ -187,7 +187,7 @@ namespace TelegramDocker
         static async Task<Message> ShowMigration(Message message)
         {
             return await Bot.SendTextMessageAsync(chatId: message.Chat.Id,
-                                                      text: $"Последняя миграция - {user.migration}",
+                                                      text: $"Последняя миграция - {user.Migration}",
                                                       replyMarkup: new ReplyKeyboardRemove());
         }
 
@@ -197,6 +197,7 @@ namespace TelegramDocker
             return await Bot.SendTextMessageAsync(chatId: message.Chat.Id,
                                                   text: "");
         }
+
 
         //обработка исключений
         public static Task HandleErrorAsync(ITelegramBotClient botClient, Exception exception, CancellationToken cancellationToken)
@@ -217,3 +218,4 @@ namespace TelegramDocker
         }
     }
 }
+
