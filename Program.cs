@@ -1,9 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 using ProgramSettings;
 using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -20,14 +17,14 @@ namespace TelegramDocker
     public class Program
     {
 
-        private static TelegramBotClient Bot;
-        static long tmpChatId = 0;                                       //класс для работы с json файлом
+        private static TelegramBotClient Bot;                             
+        static long tmpChatId = 0;                                       //буфферная переменная в которой, хранится id чата
         static TelegramUser user = new TelegramUser();                   //буффераня переменная, в которой будех храниться информация о чате
-
         static ILogger logger;
+
         public static async Task Main()
         {
-
+            //создание и настройка logger'a
             var loggerFactory = LoggerFactory.Create(builder =>
             {
                 builder.AddConsole();
@@ -38,11 +35,9 @@ namespace TelegramDocker
             Bot = new TelegramBotClient(Configuration.BotToken);
             var me = await Bot.GetMeAsync();
             var cts = new CancellationTokenSource();
-
           
             UserDataManager.DonwloadData(logger);
-         
-    
+             
             Bot.StartReceiving(new DefaultUpdateHandler(HandleUpdateAsync, HandleErrorAsync), cts.Token);       //подключаем обработчик на обновления и ошибки
 
             Console.WriteLine($"Start listening for @{me.Username}");
@@ -83,6 +78,8 @@ namespace TelegramDocker
                 tmpChatId = update.Message.Chat.Id;
             }
 
+            // проверка есть ли в базе запись по чату с айди tmpChatId
+            // если записи нет то будет создана новая запись
             await UserDataManager.CheckUser(tmpChatId, logger, cancellationToken);
             user = UserDataManager.TUsers.Find(n => n.Id == tmpChatId);
 
@@ -99,7 +96,9 @@ namespace TelegramDocker
                     "/set_migration" => GetValue(message),
                     _ => Usage(message)
                 };
+
                 sentMessage = await action;
+
             }// или это сообщение для ввода после метод setvalue
             else if (message.Type == MessageType.Text && user.setValueCheck && user.setterValueId == message.From.Id && user.Id == message.Chat.Id)
             {
@@ -122,28 +121,29 @@ namespace TelegramDocker
                 }
 
             }
-
             Console.WriteLine($"The message was sent with id: {sentMessage.MessageId}");
         }
 
+        // функция для получения значения от пользователя
         public static async Task setValue(Message message, CancellationToken cancellationToken)
         {
             if (long.TryParse(message.Text.TrimStart('№'), out long temp))
             {
                 user.migration = temp;
                 user.setValueCheck = false;
-                await UserDataManager.SaveChanges(tmpChatId,user ,logger, cancellationToken);
 
                 var botMessage = await Bot.SendTextMessageAsync(chatId: message.Chat.Id, text: $"Последняя миграция - {user.migration}",
                                              replyMarkup: new ReplyKeyboardRemove());
+                //закрепление сообщения с измененным значение миграции
                 if (user.messageId != 0)
                     await Bot.UnpinChatMessageAsync(chatId: message.Chat.Id, user.messageId);
                 await Bot.PinChatMessageAsync(chatId: message.Chat.Id, botMessage.MessageId);
+
                 user.messageId = botMessage.MessageId;
+                await UserDataManager.SaveChanges(tmpChatId, user, logger, cancellationToken);
             }
             else
             {
-
                 user.setValueCheck = false;
                 await Bot.SendTextMessageAsync(message.Chat.Id, "Не удалось записать значение", replyMarkup: new ReplyKeyboardRemove());
             }
@@ -155,6 +155,7 @@ namespace TelegramDocker
             user.setValueCheck = true;
             user.setterValueId = message.From.Id;
             Console.WriteLine($"setvaluecheck - {user.setValueCheck}");
+
             return await Bot.SendTextMessageAsync(message.Chat.Id, "Введите значение миграции (№.....)", replyMarkup: new ReplyKeyboardRemove());
         }
 
@@ -162,18 +163,23 @@ namespace TelegramDocker
         static async Task<Message> NextMigration(Message message, CancellationToken cancellationToken)
         {
             user.migration++;
-            UserDataManager.TUsers.Find(n => n.Id == tmpChatId).migration=user.migration;          
+            UserDataManager.TUsers.Find(n => n.Id == tmpChatId).migration=user.migration;     
+            
             await Bot.SendTextMessageAsync(chatId: message.Chat.Id,
                                                                   text: $"Значение миграции изменено",
                                                                   replyMarkup: new ReplyKeyboardRemove());
+
             var botMessage = await Bot.SendTextMessageAsync(chatId: message.Chat.Id,
                                                        text: $"Последняя миграция - {user.migration}",
                                                        replyMarkup: new ReplyKeyboardRemove());
+            //закрепление сообщения с измененным значение миграции
             if(user.messageId != 0)
                 await Bot.UnpinChatMessageAsync(chatId: message.Chat.Id, user.messageId);
             await Bot.PinChatMessageAsync(chatId: message.Chat.Id, botMessage.MessageId);
             user.messageId = botMessage.MessageId;
+
             await UserDataManager.SaveChanges(tmpChatId, user, logger, cancellationToken);
+
             return botMessage;
         }
 
