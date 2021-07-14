@@ -16,9 +16,10 @@ namespace TelegramDocker
                 Database.EnsureCreated();
                 System.Console.WriteLine("Подключение к БД успешно");
             }
-            catch
+            catch(System.Exception ex)
             {
                 System.Console.WriteLine("Хранение данных будет происходить в JSON файл");
+                UserDataManager.ErrorMessage(ex, Program.logger);
             }
         }
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)

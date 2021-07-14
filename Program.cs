@@ -20,7 +20,7 @@ namespace TelegramDocker
         private static TelegramBotClient Bot;                             
         static long tmpChatId = 0;                                       //буфферная переменная в которой, хранится id чата
         static TelegramUser user = new TelegramUser();                   //буффераня переменная, в которой будех храниться информация о чате
-        static ILogger logger;
+        public static ILogger logger;
 
         public static async Task Main()
         {
@@ -197,7 +197,6 @@ namespace TelegramDocker
             return await Bot.SendTextMessageAsync(chatId: message.Chat.Id,
                                                   text: "");
         }
-
 
         //обработка исключений
         public static Task HandleErrorAsync(ITelegramBotClient botClient, Exception exception, CancellationToken cancellationToken)

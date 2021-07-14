@@ -39,7 +39,7 @@ namespace TelegramDocker
                 try
                 {
                     db = new ApplicationContext();
-                    db.AddRange(TUsers, cancellationToken);
+                    db.telegramChatInfo.UpdateRange(TUsers);
                     db.SaveChanges();
                     dbIsWorking = true;
                 }
@@ -103,7 +103,7 @@ namespace TelegramDocker
             }
         }
 
-        private static void ErrorMessage(Exception ex, ILogger logger)
+        public static void ErrorMessage(Exception ex, ILogger logger)
         {
             logger.LogError("LogError {0}", ex.Message);
             logger.LogInformation("StackTrace {0}", ex.StackTrace);
