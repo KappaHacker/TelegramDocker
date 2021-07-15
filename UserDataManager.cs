@@ -80,6 +80,7 @@ namespace TelegramDocker
         //проверка наличия записи по чату с id = tmpChatId, если нет то создается новая запись
         public static async Task CheckUser(long tmpChatId, ILogger logger, CancellationToken cancellationToken)
         {
+            if(TUsers.Count != 0)
             if (TUsers.Find(n => n.Id == tmpChatId) == null)
             {
                 TelegramUser user1 = new TelegramUser { Migration = 0, Id = tmpChatId, SetValueCheck = false, SetterValueId = 0, MessageId = 0 };
