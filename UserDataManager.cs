@@ -91,9 +91,11 @@ namespace TelegramDocker
         //устанвока первого соединния с бд и загрузка записей
         public static void DonwloadData( ILogger logger)
         {
+            bool newFile=false;
             if(!File.Exists(Configuration.path))
             {
                 File.Create(Configuration.path);
+                newFile=true;
             }
             try
             {
@@ -103,6 +105,7 @@ namespace TelegramDocker
             catch (Exception ex)
             {
                 ErrorMessage(ex, logger);
+                if(!newFile)                   
                 TUsers = JsonConvert.DeserializeObject<List<TelegramUser>>(System.IO.File.ReadAllText(Configuration.path));
             }
         }
