@@ -91,6 +91,10 @@ namespace TelegramDocker
         //устанвока первого соединния с бд и загрузка записей
         public static void DonwloadData( ILogger logger)
         {
+            if(!File.Exists(Configuration.path))
+            {
+                File.Create(Configuration.path);
+            }
             try
             {
                 db = new ApplicationContext();
